@@ -1,36 +1,54 @@
-import { createClient, KameleoonProvider, useFeatureFlag } from '@kameleoon/react-sdk';
+import { createClient, KameleoonProvider, useFeatureFlag, useInitialize, useVisitorCode } from '@kameleoon/react-sdk';
 import './App.css';
+import { useEffect, useState } from 'react';
+
+const siteCode = 'giv1l0ud59';
+const featureFlagKey = 'onboarding-flag';
 
 const client = createClient({
-  siteCode: 'giv1l0ud59',
+  siteCode: siteCode,
   configuration: {
     environment: import.meta.env.MODE === 'development' ? 'development' : 'production',
+    updateInterval: 1,
   }
 });
 
 function FeatureFlagDemo() {
-  const { isActive, error, loading } = useFeatureFlag('onboarding-flag');
+  const { initialize } = useInitialize();
+  const { isFeatureFlagActive } = useFeatureFlag();
+  const { getVisitorCode } = useVisitorCode();
   
-  console.log('Environment:', import.meta.env.MODE);
-  console.log('Kameleoon SDK Status:', loading ? 'Loading...' : 'Ready');
-  console.log('Feature Flag Status:', isActive ? 'ON' : 'OFF');
+  const [isReady, setIsReady] = useState(false);
+  const [isFlagOn, setIsFlagOn] = useState(false);
 
-  if (loading) {
-    return <div className="flag-block">Loading...</div>;
+  useEffect(() => {
+    async function initAndCheck() {
+      try {
+        //window.localStorage.clear();
+        await initialize();
+        
+        const visitorCode = getVisitorCode();
+        const active = isFeatureFlagActive(visitorCode, featureFlagKey);
+        
+        console.log('SDK initialized. Flag status:', active);
+        
+        setIsFlagOn(active);
+        setIsReady(true);
+      } catch (error) {
+        console.error("Kameleoon SDK failed to initialize:", error);
+      }
+    }
+
+    initAndCheck();
+  }, [initialize, getVisitorCode, isFeatureFlagActive]);
+
+  if (!isReady) {
+    return <div>Loading Feature Flags...</div>;
   }
-  
-  if (error) {
-    return (
-      <div className="flag-block">
-        <h3>Error loading feature flag</h3>
-        <p>{error.message}</p>
-      </div>
-    );
-  };
 
   return (
     <>
-      {isActive ? (
+      {isFlagOn ? (
         <div className="flag-block flag-block--active">
           <h2>New Feature (DEV)</h2>
           <p>Flag: onboarding-flag is <strong>ON</strong></p>
