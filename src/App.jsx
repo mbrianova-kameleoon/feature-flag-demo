@@ -3,16 +3,20 @@ import './App.css';
 
 const client = createClient({
   siteCode: 'giv1l0ud59',
+  configuration: {
+    environment: import.meta.env.MODE === 'development' ? 'development' : 'production',
+  }
 });
 
 function FeatureFlagDemo() {
   const { isActive, error, loading } = useFeatureFlag('onboarding-flag');
   
   console.log('Environment:', import.meta.env.MODE);
+  console.log('Kameleoon SDK Status:', loading ? 'Loading...' : 'Ready');
   console.log('Feature Flag Status:', isActive ? 'ON' : 'OFF');
 
   if (loading) {
-    return <p>Loading feature flags...</p>;
+    return <div className="flag-block">Loading...</div>;
   }
   
   if (error) {
