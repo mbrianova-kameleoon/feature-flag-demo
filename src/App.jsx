@@ -1,11 +1,19 @@
-import { KameleoonProvider, useFeatureFlag } from '@kameleoon/react-sdk'
-import './App.css'
+import { createClient, KameleoonProvider, useFeatureFlag } from '@kameleoon/react-sdk';
+import './App.css';
+
+const client = createClient({
+  siteCode: 'giv1l0ud59',
+});
 
 function FeatureFlagDemo() {
-  const { isActive, error } = useFeatureFlag('onboarding-flag')
+  const { isActive, error, loading } = useFeatureFlag('onboarding-flag');
   
-  console.log('Environment:', import.meta.env.MODE)
-  console.log('Feature Flag Status:', isActive ? 'ON' : 'OFF')
+  console.log('Environment:', import.meta.env.MODE);
+  console.log('Feature Flag Status:', isActive ? 'ON' : 'OFF');
+
+  if (loading) {
+    return <p>Loading feature flags...</p>;
+  }
   
   if (error) {
     return (
@@ -13,8 +21,8 @@ function FeatureFlagDemo() {
         <h3>Error loading feature flag</h3>
         <p>{error.message}</p>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <>
@@ -30,18 +38,18 @@ function FeatureFlagDemo() {
         </div>
       )}
     </>
-  )
-}
+  );
+};
 
 function App() {
   return (
-    <KameleoonProvider siteCode="YOUR_SITE_CODE">
+    <KameleoonProvider client={client}>
       <div>
         <h1>Kameleoon Feature Flag Demo</h1>
         <FeatureFlagDemo />
       </div>
     </KameleoonProvider>
-  )
-}
+  );
+};
 
-export default App
+export default App;
